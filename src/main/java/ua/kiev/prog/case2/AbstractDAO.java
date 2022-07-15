@@ -176,32 +176,31 @@ public abstract class AbstractDAO<T> {
     // select name, age from clients where name is not null and  age is not null ;
 
     public List<T> getAll(Class<T> cls, String... nameOfColumn) {
-        String sql;
         List<T> res = new ArrayList<>();
-        if (nameOfColumn.length != 0) {
+        // -----------------------------------
+        String sql;
+        int countOfArgum = nameOfColumn.length;
+        if (countOfArgum != 0) {
             String[] arrayNameOfColumn = nameOfColumn;
-        }
-        StringBuilder columns = new StringBuilder();
-        StringBuilder whereNotNull = new StringBuilder();
-        String sqlColumns;
-        String sqlWhereNotNull;
+            StringBuilder columns = new StringBuilder();
+            StringBuilder whereNotNull = new StringBuilder();
+            String sqlColumns;
+            String sqlWhereNotNull;
 
-        for (int i = 0; i < nameOfColumn.length; i++) {
-            columns.append(nameOfColumn[i]).append(", ");
-            whereNotNull.append(nameOfColumn[i]).append(" is not null and ");
-        }
-
-        sqlColumns = columns.deleteCharAt(columns.length() - 2).toString();
-        sqlWhereNotNull = whereNotNull.delete((whereNotNull.length() - 5), (whereNotNull.length())).toString();
-        if (nameOfColumn.length == 0) {
-            sql = "SELECT * FROM " + table;
+            for (int i = 0; i < nameOfColumn.length; i++) {
+                columns.append(nameOfColumn[i]).append(", ");
+                whereNotNull.append(nameOfColumn[i]).append(" is not null and ");
+            }
+            sqlColumns = columns.deleteCharAt(columns.length() - 2).toString();
+            sqlWhereNotNull = whereNotNull.delete((whereNotNull.length() - 5), (whereNotNull.length())).toString();
+            sql = "SELECT " + sqlColumns + "FROM " + table + " WHERE " + sqlWhereNotNull;
         } else {
-          sql = "SELECT " + sqlColumns + "FROM " + table + " WHERE " + sqlWhereNotNull;
+            sql = "SELECT * FROM " + table;
         }
-
+        // ---------------------------------------------------------------------------
         try {
             try (Statement st = conn.createStatement()) {
-               try (ResultSet rs = st.executeQuery(sql)) {
+                try (ResultSet rs = st.executeQuery(sql)) {
                     ResultSetMetaData md = rs.getMetaData();
 
                     while (rs.next()) {
@@ -209,12 +208,15 @@ public abstract class AbstractDAO<T> {
 
                         for (int i = 1; i <= md.getColumnCount(); i++) {
                             String columnName = md.getColumnName(i);
+
                             for (int j = 0; j < nameOfColumn.length; j++) {
 
                                 if (columnName.equals(nameOfColumn[j])) {
+                                    //++++++++++++++++++++++++++++++++
                                     Field field = cls.getDeclaredField(columnName);
                                     field.setAccessible(true);
                                     field.set(t, rs.getObject(columnName));
+                                    //++++++++++++++++++++++++++++++++++
                                 }
                             }
                         }
@@ -230,6 +232,11 @@ public abstract class AbstractDAO<T> {
 
     }
     //=========================================
+
+    private String getSQL() {
+        String sql= "";
+        return sql;
+    }
 
 
     private Field getPrimaryKeyField(T t, Field[] fields) {
