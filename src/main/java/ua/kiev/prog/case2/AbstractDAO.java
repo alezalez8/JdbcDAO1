@@ -29,16 +29,17 @@ public abstract class AbstractDAO<T> {
                 .append(" ")
                 .append(" INT AUTO_INCREMENT PRIMARY KEY,");
 
+        //          CREATE TABLE name_of_table(ID INT AUTO_INCREMENT PRIMARY KEY,
+
         for (Field f : fields) {
             if (f != id) {
                 f.setAccessible(true);
 
                 sql.append(f.getName()).append(" ");
-
                 if (f.getType() == int.class) {
-                    sql.append("INT,");
+                    sql.append("INT,");  // AGE INT
                 } else if (f.getType() == String.class) {
-                    sql.append("VARCHAR(100),");
+                    sql.append("VARCHAR(100),"); // NAME VARCHAR(100)
                 } else
                     throw new RuntimeException("Wrong type");
             }
@@ -46,7 +47,7 @@ public abstract class AbstractDAO<T> {
 
         sql.deleteCharAt(sql.length() - 1);
         sql.append(")");
-
+//    sql = "CREATE TABLE name_of_table(ID INT AUTO_INCREMENT PRIMARY KEY, AGE INT, NAME VARCHAR(100))"
         try {
             try (Statement st = conn.createStatement()) {
                 st.execute(sql.toString());
@@ -70,8 +71,8 @@ public abstract class AbstractDAO<T> {
                 if (f != id) {
                     f.setAccessible(true);
 
-                    names.append(f.getName()).append(',');
-                    values.append('"').append(f.get(t)).append("\",");
+                    names.append(f.getName()).append(',');  // name, age,
+                    values.append('"').append(f.get(t)).append("\","); // "Noname", "33",
                 }
             }
 
@@ -143,7 +144,7 @@ public abstract class AbstractDAO<T> {
         }
     }
 
-    public List<T> getAll(Class<T> cls) {
+    /*public List<T> getAll(Class<T> cls) {
         List<T> res = new ArrayList<>();
 
         try {
@@ -158,10 +159,8 @@ public abstract class AbstractDAO<T> {
                             String columnName = md.getColumnName(i);
                             Field field = cls.getDeclaredField(columnName);
                             field.setAccessible(true);
-
                             field.set(t, rs.getObject(columnName));
                         }
-
                         res.add(t);
                     }
                 }
@@ -171,17 +170,67 @@ public abstract class AbstractDAO<T> {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-    }
+    }*/
 
     //=========================================
-    public List<T> getAll(Class<T> cls, String ... nameOfColumn) {
-        int size = nameOfColumn.length;
-        for (int i = 0; i < size; i++) {
-            System.out.println(": " + nameOfColumn[i]);
+    // select name, age from clients where name is not null and  age is not null ;
+
+    public List<T> getAll(Class<T> cls, String... nameOfColumn) {
+        String sql;
+        List<T> res = new ArrayList<>();
+        if (nameOfColumn.length != 0) {
+            String[] arrayNameOfColumn = nameOfColumn;
+        }
+        StringBuilder columns = new StringBuilder();
+        StringBuilder whereNotNull = new StringBuilder();
+        String sqlColumns;
+        String sqlWhereNotNull;
+
+        for (int i = 0; i < nameOfColumn.length; i++) {
+            columns.append(nameOfColumn[i]).append(", ");
+            whereNotNull.append(nameOfColumn[i]).append(" is not null and ");
         }
 
-        return null;
+        sqlColumns = columns.deleteCharAt(columns.length() - 2).toString();
+        sqlWhereNotNull = whereNotNull.delete((whereNotNull.length() - 5), (whereNotNull.length())).toString();
+        if (nameOfColumn.length == 0) {
+            sql = "SELECT * FROM " + table;
+        } else {
+          sql = "SELECT " + sqlColumns + "FROM " + table + " WHERE " + sqlWhereNotNull;
+        }
+
+        try {
+            try (Statement st = conn.createStatement()) {
+               try (ResultSet rs = st.executeQuery(sql)) {
+                    ResultSetMetaData md = rs.getMetaData();
+
+                    while (rs.next()) {
+                        T t = cls.newInstance(); //!!!
+
+                        for (int i = 1; i <= md.getColumnCount(); i++) {
+                            String columnName = md.getColumnName(i);
+                            for (int j = 0; j < nameOfColumn.length; j++) {
+
+                                if (columnName.equals(nameOfColumn[j])) {
+                                    Field field = cls.getDeclaredField(columnName);
+                                    field.setAccessible(true);
+                                    field.set(t, rs.getObject(columnName));
+                                }
+                            }
+                        }
+                        res.add(t);
+                    }
+                }
+            }
+
+            return res;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+
     }
+    //=========================================
+
 
     private Field getPrimaryKeyField(T t, Field[] fields) {
         Field result = null;

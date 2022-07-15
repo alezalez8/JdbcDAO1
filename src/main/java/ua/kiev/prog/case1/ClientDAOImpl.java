@@ -33,6 +33,7 @@ public class ClientDAOImpl implements ClientDAO {
                 st.setString(1, name);
                 st.setInt(2, age);
                 st.executeUpdate();
+
             }
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
