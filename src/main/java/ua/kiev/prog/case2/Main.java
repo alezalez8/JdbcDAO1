@@ -23,6 +23,7 @@ public class Main {
             }
 
             ClientDAOImpl2 dao = new ClientDAOImpl2(conn, "Clients");
+
             dao.createTable(Client.class);
 
             Client c = new Client("test", 1);

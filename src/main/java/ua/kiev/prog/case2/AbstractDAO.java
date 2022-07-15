@@ -173,6 +173,16 @@ public abstract class AbstractDAO<T> {
         }
     }
 
+    //=========================================
+    public List<T> getAll(Class<T> cls, String ... nameOfColumn) {
+        int size = nameOfColumn.length;
+        for (int i = 0; i < size; i++) {
+            System.out.println(": " + nameOfColumn[i]);
+        }
+
+        return null;
+    }
+
     private Field getPrimaryKeyField(T t, Field[] fields) {
         Field result = null;
 
