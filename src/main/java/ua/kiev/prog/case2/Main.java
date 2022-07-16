@@ -14,7 +14,7 @@ public class Main {
             // remove this
             try {
                 try (Statement st = conn.createStatement()) {
-                    st.execute("DROP TABLE IF EXISTS Clients"); // +++++++++++++++++
+                    //st.execute("DROP TABLE IF EXISTS Clients"); // +++++++++++++++++
                     //st.execute("CREATE TABLE Clients (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20) NOT NULL, age INT)");
                 }
             } catch (SQLException ex) {
@@ -23,7 +23,7 @@ public class Main {
 
             ClientDAOImpl2 dao = new ClientDAOImpl2(conn, "Clients");
 
-            dao.createTable(Client.class);
+          //  dao.createTable(Client.class);
 
             Client c = new Client("test", 1);
             dao.add(c);
@@ -31,6 +31,7 @@ public class Main {
             System.out.println("id of new Client is " + id);
 
             List<Client> list = dao.getAll(Client.class);
+            printArray(list);
 
 
             list.get(0).setAge(55);
@@ -38,19 +39,22 @@ public class Main {
             dao.delete(list.get(0));
 
             System.out.println("==========================================");
-            /**
-             @uncommit_needed_line_for_check_variable_cases:
-              * */
 
-            // List<Client> list = dao.getAll(Client.class, "name", "age");
-            // List<Client> list = dao.getAll(Client.class, "age");
-            // List<Client> list = dao.getAll(Client.class, "name");
+            list = dao.getAll(Client.class, "name", "age");
+            printArray(list);
+            list = dao.getAll(Client.class, "age");
+            printArray(list);
+            list = dao.getAll(Client.class, "name");
+            printArray(list);
 
-
-            for (Client cli : list) {
-                System.out.println(cli);
-            }
 
         }
+    }
+
+    public static void printArray(List<Client> array) {
+        for (Client cli : array) {
+            System.out.println(cli);
+        }
+        System.out.println("+++++++++++++++++++++++++++++++++++++");
     }
 }
