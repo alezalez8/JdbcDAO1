@@ -18,7 +18,7 @@ public abstract class AbstractDAO<T> {
 
     public void createTable(Class<T> cls) {
         Field[] fields = cls.getDeclaredFields();
-        Field id = getPrimaryKeyField(fields);
+        Field id = getPrimaryKeyField(null, fields);
 
         StringBuilder sql = new StringBuilder();
         sql.append("CREATE TABLE ")
@@ -61,7 +61,7 @@ public abstract class AbstractDAO<T> {
         int lastId = 0;
         try {
             Field[] fields = t.getClass().getDeclaredFields();
-            Field id = getPrimaryKeyField(fields);
+            Field id = getPrimaryKeyField(t, fields);
 
             StringBuilder names = new StringBuilder();
             StringBuilder values = new StringBuilder();
@@ -109,7 +109,7 @@ public abstract class AbstractDAO<T> {
     public void update(T t) {
         try {
             Field[] fields = t.getClass().getDeclaredFields();
-            Field id = getPrimaryKeyField(fields);
+            Field id = getPrimaryKeyField(t, fields);
 
             StringBuilder sb = new StringBuilder();
 
@@ -142,7 +142,7 @@ public abstract class AbstractDAO<T> {
     public void delete(T t) {
         try {
             Field[] fields = t.getClass().getDeclaredFields();
-            Field id = getPrimaryKeyField(fields);
+            Field id = getPrimaryKeyField(t, fields);
 
             String sql = "DELETE FROM " + table + " WHERE " + id.getName() +
                     " = \"" + id.get(t) + "\"";
@@ -212,7 +212,7 @@ public abstract class AbstractDAO<T> {
     }
 
 
-    private Field getPrimaryKeyField(Field[] fields) {
+    private Field getPrimaryKeyField(T t, Field[] fields) {
         Field result = null;
 
         for (Field f : fields) {

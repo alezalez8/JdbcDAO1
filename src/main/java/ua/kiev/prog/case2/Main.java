@@ -54,7 +54,7 @@ public class Main {
             dao.update(list.get(0));
 
 
-           // dao.delete(list.get(0));
+            dao.delete(list.get(0));
         }
     }
 }
