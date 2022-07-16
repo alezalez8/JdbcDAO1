@@ -31,6 +31,8 @@ public class Main {
             System.out.println("id of new Client is " + id);
 
             List<Client> list = dao.getAll(Client.class);
+            System.out.println("Method getAll(Client.class)");
+
             printArray(list);
 
 
@@ -41,10 +43,14 @@ public class Main {
             System.out.println("==========================================");
 
             list = dao.getAll(Client.class, "name", "age");
+            System.out.println("Method getAll(Client.class, \"name\", \"age\")");
             printArray(list);
             list = dao.getAll(Client.class, "age");
+            System.out.println("Method getAll(Client.class,  \"age\")");
             printArray(list);
             list = dao.getAll(Client.class, "name");
+            System.out.println("Method getAll(Client.class, \"name\")");
+
             printArray(list);
 
 
