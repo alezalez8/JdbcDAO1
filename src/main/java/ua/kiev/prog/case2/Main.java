@@ -14,7 +14,7 @@ public class Main {
             // remove this
             try {
                 try (Statement st = conn.createStatement()) {
-                    //st.execute("DROP TABLE IF EXISTS Clients"); // +++++++++++++++++
+                    //st.execute("DROP TABLE IF EXISTS Clients");
                     //st.execute("CREATE TABLE Clients (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20) NOT NULL, age INT)");
                 }
             } catch (SQLException ex) {
