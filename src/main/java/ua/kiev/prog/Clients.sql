@@ -1,3 +1,15 @@
+create table Clients(
+      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(20),
+      age int
+);
+
+select * from clients;
+
+drop table clients;
+
+
+
 insert into clients (name, age) VALUES ('Aleks', 49);
 insert into clients (age) VALUES (55);
 insert into clients (name, age) VALUES ('Roman', 42);

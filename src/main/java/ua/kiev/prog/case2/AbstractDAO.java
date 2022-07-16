@@ -18,7 +18,7 @@ public abstract class AbstractDAO<T> {
 
     public void createTable(Class<T> cls) {
         Field[] fields = cls.getDeclaredFields();
-        Field id = getPrimaryKeyField(null, fields);
+        Field id = getPrimaryKeyField(fields);
 
         StringBuilder sql = new StringBuilder();
         sql.append("CREATE TABLE ")
@@ -57,10 +57,11 @@ public abstract class AbstractDAO<T> {
         }
     }
 
-    public void add(T t) {
+    public long add(T t) {
+        int lastId = 0;
         try {
             Field[] fields = t.getClass().getDeclaredFields();
-            Field id = getPrimaryKeyField(t, fields);
+            Field id = getPrimaryKeyField(fields);
 
             StringBuilder names = new StringBuilder();
             StringBuilder values = new StringBuilder();
@@ -70,20 +71,30 @@ public abstract class AbstractDAO<T> {
             for (Field f : fields) {
                 if (f != id) {
                     f.setAccessible(true);
-
-                    names.append(f.getName()).append(',');  // name, age,
-                    values.append('"').append(f.get(t)).append("\","); // "Noname", "33",
+                    names.append(f.getName()).append(',');
+                    values.append('"').append(f.get(t)).append("\",");
                 }
             }
 
-            names.deleteCharAt(names.length() - 1); // last ','
+            names.deleteCharAt(names.length() - 1);
             values.deleteCharAt(values.length() - 1);
 
             String sql = "INSERT INTO " + table + "(" + names.toString() +
                     ") VALUES(" + values.toString() + ")";
 
+            String sqlId = "SELECT MAX(id) FROM " + table;
+            // String sqlId1 = "SELECT id FROM " + table + " ORDER BY id DESC LIMIT 1";
+
             try (Statement st = conn.createStatement()) {
                 st.execute(sql);
+
+                ResultSet resultSet = st.executeQuery(sqlId);
+                while (resultSet.next()) {
+                    lastId = resultSet.getInt(1);
+                }
+                id.setAccessible(true);
+                id.setInt(t, lastId);
+
             }
 
             // TODO: get ID
@@ -92,12 +103,13 @@ public abstract class AbstractDAO<T> {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+        return 0;
     }
 
     public void update(T t) {
         try {
             Field[] fields = t.getClass().getDeclaredFields();
-            Field id = getPrimaryKeyField(t, fields);
+            Field id = getPrimaryKeyField(fields);
 
             StringBuilder sb = new StringBuilder();
 
@@ -116,7 +128,6 @@ public abstract class AbstractDAO<T> {
 
             sb.deleteCharAt(sb.length() - 1);
 
-            // update t set name = "aaaa", age = "22" where id = 5
             String sql = "UPDATE " + table + " SET " + sb.toString() + " WHERE " +
                     id.getName() + " = \"" + id.get(t) + "\"";
 
@@ -131,7 +142,7 @@ public abstract class AbstractDAO<T> {
     public void delete(T t) {
         try {
             Field[] fields = t.getClass().getDeclaredFields();
-            Field id = getPrimaryKeyField(t, fields);
+            Field id = getPrimaryKeyField(fields);
 
             String sql = "DELETE FROM " + table + " WHERE " + id.getName() +
                     " = \"" + id.get(t) + "\"";
@@ -167,8 +178,8 @@ public abstract class AbstractDAO<T> {
                             String columnName = md.getColumnName(i);
                             Field field = cls.getDeclaredField(columnName);
                             field.setAccessible(true);
-                            if(rs.getObject(columnName)!= null)
-                            field.set(t, rs.getObject(columnName));
+                            if (rs.getObject(columnName) != null)
+                                field.set(t, rs.getObject(columnName));
                         }
                         res.add(t);
                     }
@@ -201,7 +212,7 @@ public abstract class AbstractDAO<T> {
     }
 
 
-    private Field getPrimaryKeyField(T t, Field[] fields) {
+    private Field getPrimaryKeyField(Field[] fields) {
         Field result = null;
 
         for (Field f : fields) {
