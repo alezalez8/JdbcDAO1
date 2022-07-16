@@ -26,8 +26,8 @@ public class Main {
 
            // dao.createTable(Client.class); // +++++++++++++++++
 
-            Client c = new Client("test", 1);
-            dao.add(c);
+           /* Client c = new Client("test", 1);
+            dao.add(c);*/
             // int id = c.getId();
 
             /*List<Client> list = dao.getAll(Client.class);
@@ -37,12 +37,12 @@ public class Main {
             list.get(0).setAge(55);
             dao.update(list.get(0));*/
 
-            System.out.println("==================================================");
 
 
-            List<Client> list = dao.getAll(Client.class, "name", "age");
+           // List<Client> list = dao.getAll(Client.class);
+           // List<Client> list = dao.getAll(Client.class, "name", "age");
            // List<Client> list = dao.getAll(Client.class, "age");
-           // List<Client> list = dao.getAll(Client.class, "name");
+           List<Client> list = dao.getAll(Client.class, "name");
             for (Client cli : list)
                 System.out.println(cli);
 

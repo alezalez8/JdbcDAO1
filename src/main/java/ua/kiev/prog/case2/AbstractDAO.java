@@ -144,60 +144,17 @@ public abstract class AbstractDAO<T> {
         }
     }
 
-    /*public List<T> getAll(Class<T> cls) {
-        List<T> res = new ArrayList<>();
-
-        try {
-            try (Statement st = conn.createStatement()) {
-                try (ResultSet rs = st.executeQuery("SELECT * FROM " + table)) {
-                    ResultSetMetaData md = rs.getMetaData();
-
-                    while (rs.next()) {
-                        T t = cls.newInstance(); //!!!
-
-                        for (int i = 1; i <= md.getColumnCount(); i++) {
-                            String columnName = md.getColumnName(i);
-                            Field field = cls.getDeclaredField(columnName);
-                            field.setAccessible(true);
-                            field.set(t, rs.getObject(columnName));
-                        }
-                        res.add(t);
-                    }
-                }
-            }
-
-            return res;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }*/
-
-    //=========================================
     // select name, age from clients where name is not null and  age is not null ;
 
     public List<T> getAll(Class<T> cls, String... nameOfColumn) {
         List<T> res = new ArrayList<>();
-        // -----------------------------------
         String sql;
-        int countOfArgum = nameOfColumn.length;
-        if (countOfArgum != 0) {
-            String[] arrayNameOfColumn = nameOfColumn;
-            StringBuilder columns = new StringBuilder();
-            StringBuilder whereNotNull = new StringBuilder();
-            String sqlColumns;
-            String sqlWhereNotNull;
-
-            for (int i = 0; i < nameOfColumn.length; i++) {
-                columns.append(nameOfColumn[i]).append(", ");
-                whereNotNull.append(nameOfColumn[i]).append(" is not null and ");
-            }
-            sqlColumns = columns.deleteCharAt(columns.length() - 2).toString();
-            sqlWhereNotNull = whereNotNull.delete((whereNotNull.length() - 5), (whereNotNull.length())).toString();
-            sql = "SELECT " + sqlColumns + "FROM " + table + " WHERE " + sqlWhereNotNull;
+        if (nameOfColumn.length != 0) {
+            sql = getSQL(nameOfColumn);
         } else {
             sql = "SELECT * FROM " + table;
         }
-        // ---------------------------------------------------------------------------
+
         try {
             try (Statement st = conn.createStatement()) {
                 try (ResultSet rs = st.executeQuery(sql)) {
@@ -208,17 +165,10 @@ public abstract class AbstractDAO<T> {
 
                         for (int i = 1; i <= md.getColumnCount(); i++) {
                             String columnName = md.getColumnName(i);
-
-                            for (int j = 0; j < nameOfColumn.length; j++) {
-
-                                if (columnName.equals(nameOfColumn[j])) {
-                                    //++++++++++++++++++++++++++++++++
-                                    Field field = cls.getDeclaredField(columnName);
-                                    field.setAccessible(true);
-                                    field.set(t, rs.getObject(columnName));
-                                    //++++++++++++++++++++++++++++++++++
-                                }
-                            }
+                            Field field = cls.getDeclaredField(columnName);
+                            field.setAccessible(true);
+                            if(rs.getObject(columnName)!= null)
+                            field.set(t, rs.getObject(columnName));
                         }
                         res.add(t);
                     }
@@ -231,11 +181,23 @@ public abstract class AbstractDAO<T> {
         }
 
     }
-    //=========================================
 
-    private String getSQL() {
-        String sql= "";
-        return sql;
+
+    private String getSQL(String... nameOfColumn) {
+
+        StringBuilder columns = new StringBuilder();
+        StringBuilder whereNotNull = new StringBuilder();
+        String sqlColumns;
+        String sqlWhereNotNull;
+
+        for (int i = 0; i < nameOfColumn.length; i++) {
+            columns.append(nameOfColumn[i]).append(", ");
+            whereNotNull.append(nameOfColumn[i]).append(" is not null and ");
+        }
+        sqlColumns = columns.deleteCharAt(columns.length() - 2).toString();
+        sqlWhereNotNull = whereNotNull.delete((whereNotNull.length() - 5), (whereNotNull.length())).toString();
+
+        return "SELECT " + sqlColumns + "FROM " + table + " WHERE " + sqlWhereNotNull;
     }
 
 
